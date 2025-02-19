@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Are we laid off yet?</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+
+        <style>
+body {
+    background-color: black;
+    color: white;
+    margin: 0;
+}
+h1, h2 {
+    text-align: center;
+}
+h1 {
+    font-family: 'Comic Sans MS';
+    font-size: 10vw;
+    margin: 0;
+}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 1em;
+}
+ul li {
+    text-decoration: line-through;
+}
+ul li:first-child {
+    text-decoration: none;
+}
+.vbox {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.flex {
+    -webkit-flex: 1;
+    flex: 1;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+        </style>
+    </head>
+
+    <body class="vbox">
+        <h1 id="answer" class="flex">WAIT</h1>
+        <h2>Days since last layoff: <strong id="last-layoff-days"></strong></h2>
+        <h2>Expected layoff <strong id="next-layoff-days"></strong></h2>
+        <ul>
+           <li>(since February 19, 2025 - Marketing)</li>
+           <li>(since October 30, 2024 - Mozilla Foundation)</li>
+           <li>(since September 5, 2024 - Data, 11 people)</li>
+	       <li>(since February 13, 2024 - Products, 60 people)</li>
+	       <li>(since August 11, 2020 - 250 people)</li>
+	       <li>(since January 15, 2020 - 70 people)</li>
+        </ul>
+	       <p style="text-align:center">Submit dates to <a href="mailto:arewelaidoffyet@proton.me">arewelaidoffyet@proton.me</a></p>
+        <script>
+
+function require(name) {
+    switch (name) {
+        case 'jquery': return function(key) {
+            if (key[0] === '#')
+                return document.getElementById(key.substring(1, key.length));
+            return document.getElementsByTagName(key);
+        };
+        case 'moment': return function(d) {
+            return new Date(d);
+        };
+        case 'mocha': return {
+            describe: function(txt, func) {
+                console.log(txt);
+                try {
+                    func();
+                    console.log('PASS!');
+                } catch(e) {
+                    console.log('FAIL!', e.toString());
+                }
+            }
+        };
+        case 'should': return {
+            equal: function(a,b) {
+                if ((!!a && a===b) || (1/a === 1/b) || (a!==a && b!==b)) {
+                    return;
+                }
+                throw new Error('equality error, expected ' + b + ', got ' + a);
+            }
+        };
+        default: alert('unimplemented library!!!!1!');
+    }
+}
+
+var $ = require('jquery');
+
+var moment = require('moment');
+
+function parseDate(txt) {
+    return moment(txt.replace('(since', '').replace(')', '').split(" - ")[0]);
+}
+
+// unit tests, yo
+var mocha = require('mocha');
+var should = require('should');
+
+var NOW = +new Date();
+var ONE_DAY = 24 * 60 * 60 * 1000;
+
+var lis = $('li');
+var layoffs = [];
+for (var i = 0; i < lis.length; i++) {
+    let thisLayoff = parseDate(lis[i].textContent);
+    // Only use layoffs from the last 4 years.
+    // Don't need to handle the case where we don't have enough data.
+    if ((+layoffs[0] - +thisLayoff) / ONE_DAY > 4 * 365) {
+        break;
+    }
+    layoffs.push(thisLayoff);
+}
+
+var lastLayoff = +layoffs[0];
+var firstLayoff = +layoffs[layoffs.length - 1];
+
+var daysSinceLastLayoff = Math.floor((NOW - lastLayoff) / ONE_DAY);
+$('#last-layoff-days').textContent = daysSinceLastLayoff;
+
+let avgTimeBetweenLayoffs = (lastLayoff - firstLayoff) / (layoffs.length - 1);
+
+var expectedNextLayoff = lastLayoff + avgTimeBetweenLayoffs;
+let expectedNextLayoffDay = new Date(expectedNextLayoff);
+if (expectedNextLayoffDay.getDay() == 6) {
+  // Saturday, move it Monday.
+  expectedNextLayoff += 2 * ONE_DAY;
+} else if (expectedNextLayoffDay.getDay() == 0) {
+  // Sunday, move it Monday.
+  expectedNextLayoff += 1 * ONE_DAY;
+}
+
+var daysToNextLayoff = Math.ceil((expectedNextLayoff - NOW) / ONE_DAY);
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat("en", {
+    numeric: "always",
+    style: "long",
+});
+
+let nextLayoffText = relativeTimeFormatter.format(daysToNextLayoff, "day");
+nextLayoffText += " (" + (new Date(expectedNextLayoff)).toDateString() + ")";
+
+$('#next-layoff-days').textContent = nextLayoffText;
+
+$('#answer').textContent = daysToNextLayoff > 0 ? 'YEA, DEFINITELY' : 'YEA, KINDA';
+        </script>
+    </body>
+</html>
