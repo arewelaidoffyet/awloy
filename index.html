@@ -155,7 +155,7 @@ nextLayoffText += " (" + (new Date(expectedNextLayoff)).toDateString() + ")";
 
 $('#next-layoff-days').textContent = nextLayoffText;
 
-$('#answer').textContent = daysToNextLayoff > 0 ? 'YEA, DEFINITELY' : 'YEA, KINDA';
+$('#answer').textContent = daysToNextLayoff == 0 ? 'YEA, DEFINITELY' : 'YEA, KINDA';
         </script>
     </body>
 </html>
